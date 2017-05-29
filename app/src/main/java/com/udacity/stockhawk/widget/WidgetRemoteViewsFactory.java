@@ -36,7 +36,7 @@ public class WidgetRemoteViewsFactory implements RemoteViewsService.RemoteViewsF
                 null,
                 null,
                 null,
-                Contract.Quote._ID + " DESC");
+                Contract.Quote.COLUMN_SYMBOL);
 
         Binder.restoreCallingIdentity(identityToken);
     }
