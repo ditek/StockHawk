@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
 import android.widget.Toast;
 
 import com.udacity.stockhawk.MockUtils;
@@ -30,6 +31,8 @@ import yahoofinance.histquotes.HistoricalQuote;
 import yahoofinance.histquotes.Interval;
 import yahoofinance.quotes.stock.StockQuote;
 
+import static android.os.Looper.getMainLooper;
+
 public final class QuoteSyncJob {
 
     private static final int ONE_OFF_ID = 2;
@@ -42,7 +45,7 @@ public final class QuoteSyncJob {
     private QuoteSyncJob() {
     }
 
-    static void getQuotes(Context context) {
+    static void getQuotes(final Context context) {
 
         Timber.d("Running sync job");
 
@@ -73,14 +76,21 @@ public final class QuoteSyncJob {
             while (iterator.hasNext()) {
                 String symbol = iterator.next();
 
-
                 Stock stock = quotes.get(symbol);
-                String name = stock.getName();
-                if(name == null){
-                    Toast.makeText(context, "Stock does not exist", Toast.LENGTH_SHORT).show();
+                if(stock == null || stock.getName() == null){
+                    PrefUtils.removeStock(context, symbol);
+                    // create a handler to post messages to the main thread
+                    Handler mHandler = new Handler(getMainLooper());
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(context, "Stock does not exist", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     continue;
                 }
 
+                String name = stock.getName();
                 StockQuote quote = stock.getQuote();
 
                 float price = quote.getPrice().floatValue();
