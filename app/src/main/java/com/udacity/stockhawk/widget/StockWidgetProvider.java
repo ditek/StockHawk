@@ -76,9 +76,9 @@ public class StockWidgetProvider extends AppWidgetProvider {
         int width = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
         int height = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
 
-        if(width <= R.dimen.widget_min_width + 70){
-        views.setViewVisibility(R.id.price, View.GONE);
-        } else{
+        if (width <= R.dimen.widget_min_width + 70) {
+            views.setViewVisibility(R.id.price, View.GONE);
+        } else {
             views.setViewVisibility(R.id.price, View.VISIBLE);
         }
         Timber.i("Widget width: " + String.valueOf(width) + " height: " + String.valueOf(height));
