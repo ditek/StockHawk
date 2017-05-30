@@ -11,13 +11,31 @@ import android.widget.RemoteViewsService;
 
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
+import com.udacity.stockhawk.data.PrefUtils;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+import static com.udacity.stockhawk.R.id.change;
 
 public class WidgetRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     private Context mContext;
     private Cursor mCursor;
 
+    private final DecimalFormat dollarFormatWithPlus;
+    private final DecimalFormat dollarFormat;
+    private final DecimalFormat percentageFormat;
+
     public WidgetRemoteViewsFactory(Context applicationContext, Intent intent) {
         mContext = applicationContext;
+        dollarFormat = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
+        dollarFormatWithPlus = (DecimalFormat) NumberFormat.getCurrencyInstance(Locale.US);
+        dollarFormatWithPlus.setPositivePrefix("+$");
+        percentageFormat = (DecimalFormat) NumberFormat.getPercentInstance(Locale.getDefault());
+        percentageFormat.setMaximumFractionDigits(2);
+        percentageFormat.setMinimumFractionDigits(2);
+        percentageFormat.setPositivePrefix("+");
     }
 
     @Override
@@ -62,6 +80,27 @@ public class WidgetRemoteViewsFactory implements RemoteViewsService.RemoteViewsF
 
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.list_item_quote);
         rv.setTextViewText(R.id.symbol, mCursor.getString(Contract.Quote.POSITION_SYMBOL));
+        rv.setTextViewText(R.id.price, mCursor.getString(Contract.Quote.POSITION_PRICE));
+
+        float rawAbsoluteChange = mCursor.getFloat(Contract.Quote.POSITION_ABSOLUTE_CHANGE);
+        float percentageChange = mCursor.getFloat(Contract.Quote.POSITION_PERCENTAGE_CHANGE);
+
+        if (rawAbsoluteChange > 0) {
+            rv.setInt(R.id.change, "setBackgroundResource", R.drawable.percent_change_pill_green);
+        } else {
+            rv.setInt(R.id.change, "setBackgroundResource", R.drawable.percent_change_pill_red);
+        }
+
+        String change = dollarFormatWithPlus.format(rawAbsoluteChange);
+        String percentage = percentageFormat.format(percentageChange / 100);
+
+        if (PrefUtils.getDisplayMode(mContext)
+                .equals(mContext.getString(R.string.pref_display_mode_absolute_key))) {
+            rv.setTextViewText(R.id.change, change);
+        } else {
+            rv.setTextViewText(R.id.change, percentage);
+        }
+
         return rv;
     }
 

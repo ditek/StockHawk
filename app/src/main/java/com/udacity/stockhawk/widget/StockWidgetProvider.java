@@ -6,6 +6,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import com.udacity.stockhawk.R;
@@ -46,14 +48,12 @@ public class StockWidgetProvider extends AppWidgetProvider {
         for (int appWidgetId : appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId);
         }
-        Timber.i("Widget Updated");
     }
 
     public static void sendRefreshBroadcast(Context context) {
         Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         intent.setComponent(new ComponentName(context, StockWidgetProvider.class));
         context.sendBroadcast(intent);
-        Timber.i("Refresh broadcast sent");
     }
 
     @Override
@@ -67,6 +67,21 @@ public class StockWidgetProvider extends AppWidgetProvider {
             mgr.notifyAppWidgetViewDataChanged(mgr.getAppWidgetIds(cn), R.id.widgetListView);
         }
         super.onReceive(context, intent);
+    }
+
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.stock_widget);
+        int width = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        int height = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+
+        if(width <= R.dimen.widget_min_width + 70){
+        views.setViewVisibility(R.id.price, View.GONE);
+        } else{
+            views.setViewVisibility(R.id.price, View.VISIBLE);
+        }
+        Timber.i("Widget width: " + String.valueOf(width) + " height: " + String.valueOf(height));
     }
 }
 
